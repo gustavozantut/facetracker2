@@ -21,11 +21,13 @@ if args.trained == 'y':
 		dicti = pickle.load(f)
 		f.close()
 
-panServo = 12
-tiltServo = 21
+panServo = 2
+tiltServo = 3
 
 panPos = 1250
-tiltPos = 1250
+tiltPos = 1600
+
+name1 = "1"
 
 servo = pigpio.pi()
 servo.set_servo_pulsewidth(panServo, panPos)
@@ -72,10 +74,11 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 			conf = int(conf)
 			for name, value in dicti.items():
 				if value == id_:
+					name1 = name
 					print(name)
 
-			if conf < 70:
-				cv2.putText(frame, name + str(conf), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0 ,255), 2,cv2.LINE_AA)
+			if conf > 56:
+				cv2.putText(frame, name1 + str(conf), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0 ,255), 2,cv2.LINE_AA)
 				movePanTilt(x, y, w, h)
 
 		else:
