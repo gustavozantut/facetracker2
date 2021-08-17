@@ -29,8 +29,6 @@ tiltPos = 1600
 
 name1 = "1"
 
-name1 = "1"
-
 servo = pigpio.pi()
 servo.set_servo_pulsewidth(panServo, panPos)
 servo.set_servo_pulsewidth(tiltServo, tiltPos)
@@ -77,14 +75,10 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 			for name, value in dicti.items():
 				if value == id_:
 					name1 = name
-					print(name)
+					print(name, conf)
 
-<<<<<<< HEAD
-			if conf > 56:
-=======
-			if conf < 75:
->>>>>>> 399cf024f05641ec3950e2e1ad75da443e7ef348
-				cv2.putText(frame, name1 + str(conf), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0 ,255), 2,cv2.LINE_AA)
+			if conf < 105:
+				cv2.putText(frame, name1 + str(140-conf), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0 ,255), 2,cv2.LINE_AA)
 				movePanTilt(x, y, w, h)
 
 		else:
