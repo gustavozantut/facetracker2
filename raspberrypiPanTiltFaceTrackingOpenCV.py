@@ -1,14 +1,37 @@
 #pigpio module for servo instead of RPi.GPIO in Raspberry pi avoids jittering.
 import cv2
-from picamera.array import PiRGBArray
-from picamera import PiCamera
 import numpy as np 
 import pickle
-import RPi.GPIO as GPIO
 import pigpio
 from time import sleep
 from numpy import interp
 import argparse
+from threading import Thread
+
+def maintain_aspect_ratio_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
+        # Grab the image size and initialize dimensions
+        dim = None
+        (h, w) = image.shape[:2]
+
+        # Return original image if no need to resize
+        if width is None and height is None:
+            return image
+
+        # We are resizing height if width is none
+        if width is None:
+            # Calculate the ratio of the height and construct the dimensions
+            r = height / float(h)
+            dim = (int(w * r), height)
+        # We are resizing width if height is none
+        else:
+            # Calculate the ratio of the 0idth and construct the dimensions
+            r = width / float(w)
+            dim = (width, int(h * r))
+
+        # Return the resized image
+        return cv2.resize(image, dim, interpolation=inter)
+
+cap = cv2.VideoCapture('rtsp://192.168.0.23:8553/unicast')
 
 args = argparse.ArgumentParser()
 args.add_argument('-t', '--trained', default='n')
@@ -21,8 +44,8 @@ if args.trained == 'y':
 		dicti = pickle.load(f)
 		f.close()
 
-panServo = 2
-tiltServo = 3
+panServo = 3
+tiltServo = 2
 
 panPos = 1250
 tiltPos = 1600
@@ -35,10 +58,6 @@ servo.set_servo_pulsewidth(tiltServo, tiltPos)
 
 minMov = 30
 maxMov = 100
-
-camera = PiCamera()
-camera.resolution = (640, 480)
-rawCapture = PiRGBArray(camera, size=(640, 480))
 
 faceCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
@@ -62,8 +81,9 @@ def movePanTilt(x, y, w, h):
 	if not tiltPos > 2500 or tiltPos < 500:
 		servo.set_servo_pulsewidth(tiltServo, tiltPos)
 
-for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
-	frame = frame.array
+while True:
+	ret, frame = cap.read()
+	frame = maintain_aspect_ratio_resize(frame)
 	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 	faces = faceCascade.detectMultiScale(gray, scaleFactor = 1.5, minNeighbors = 5)
 	
@@ -87,9 +107,9 @@ for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=
 	cv2.imshow('frame', frame)
 	key = cv2.waitKey(1)
 
-	rawCapture.truncate(0)
 
 	if key == ord("q"):
 		break
+	
 
 cv2.destroyAllWindows()
