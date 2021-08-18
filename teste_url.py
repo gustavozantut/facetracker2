@@ -1,43 +1,7 @@
-from threading import Thread
 import cv2
 
-class VideoStreamWidget(object):
-    def __init__(self, src=0):
-        # Create a VideoCapture object
-        self.capture = cv2.VideoCapture(src)
 
-        # Start the thread to read frames from the video stream
-        self.thread = Thread(target=self.update, args=())
-        self.thread.daemon = True
-        self.thread.start()
-
-    def update(self):
-        # Read the next frame from the stream in a different thread
-        while True:
-            if self.capture.isOpened():
-                (self.status, self.frame) = self.capture.read()
-
-    def show_frame(self):
-        # Display frames in main program
-        if self.status:
-            self.frame = self.maintain_aspect_ratio_resize(self.frame, width=600)
-            cv2.imshow('IP Camera Video Streaming', self.frame)
-
-    def return_frame(self):
-        # Display frames in main program
-        if self.status:
-            self.frame = self.maintain_aspect_ratio_resize(self.frame, width=600)
-            return self.frame
-
-        # Press Q on keyboard to stop recording
-        key = cv2.waitKey(1)
-        if key == ord('q'):
-            self.capture.release()
-            cv2.destroyAllWindows()
-            exit(1)
-
-    # Resizes a image and maintains aspect ratio
-    def maintain_aspect_ratio_resize(self, image, width=None, height=None, inter=cv2.INTER_AREA):
+def maintain_aspect_ratio_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
         # Grab the image size and initialize dimensions
         dim = None
         (h, w) = image.shape[:2]
@@ -60,12 +24,12 @@ class VideoStreamWidget(object):
         # Return the resized image
         return cv2.resize(image, dim, interpolation=inter)
 
+cap = cv2.VideoCapture('rtsp://192.168.0.23:8553/unicast')
 
-stream_link = 'rtsp://192.168.0.23:8553/unicast'
-video_stream_widget = VideoStreamWidget(stream_link)
 while True:
-    try:
-        video_stream_widget.show_frame()
-        print(video_stream_widget.return_frame())
-    except AttributeError:
-        pass
+    ret, image = cap.read()
+    image = maintain_aspect_ratio_resize(image)
+    cv2.imshow("Test", image)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+cv2.destroyAllWindows()
