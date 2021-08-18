@@ -44,8 +44,8 @@ if args.trained == 'y':
 		dicti = pickle.load(f)
 		f.close()
 
-panServo = 3
-tiltServo = 2
+panServo = 2
+tiltServo = 3
 
 panPos = 1250
 tiltPos = 1600
@@ -83,7 +83,7 @@ def movePanTilt(x, y, w, h):
 
 while True:
 	ret, frame = cap.read()
-	frame = maintain_aspect_ratio_resize(frame)
+	frame = maintain_aspect_ratio_resize(frame, 640, 480)
 	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 	faces = faceCascade.detectMultiScale(gray, scaleFactor = 1.5, minNeighbors = 5)
 	
