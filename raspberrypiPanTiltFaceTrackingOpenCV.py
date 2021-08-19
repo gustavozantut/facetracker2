@@ -50,14 +50,14 @@ tiltServo = 3
 panPos = 1250
 tiltPos = 1600
 
-name1 = "1"
+name1 = ""
 
 servo = pigpio.pi()
 servo.set_servo_pulsewidth(panServo, panPos)
 servo.set_servo_pulsewidth(tiltServo, tiltPos)
 
-minMov = 30
-maxMov = 100
+minMov = 10
+maxMov = 25
 
 faceCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
@@ -83,7 +83,7 @@ def movePanTilt(x, y, w, h):
 
 while True:
 	ret, frame = cap.read()
-	frame = maintain_aspect_ratio_resize(frame, 640, 480)
+	frame = maintain_aspect_ratio_resize(frame)
 	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 	faces = faceCascade.detectMultiScale(gray, scaleFactor = 1.5, minNeighbors = 5)
 	
