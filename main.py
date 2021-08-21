@@ -95,38 +95,33 @@ minMov = 10
 maxMov = 25
 
 faceCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
-print("cafe cascade:", faceCascade)
+
 @app.route("/")
+
 def index():
 	# return the rendered template
 	return render_template("index.html")
-def detect_face(frameCount):
+def detect_face(frameCount, trained):
 	# grab global references to the video stream, output frame, and
 	# lock variables
 	global vs, outputFrame, lock
-	# initialize the face detector and the total number of frames
-	# read thus far
-
-    # initialize the total number of frames
-	# read thus far
-	total = 0
+	if trained == 'y':
+		recognizer = cv2.face.LBPHFaceRecognizer_create()
+		recognizer.read("trainer.yml")
+		with open('labels', 'rb') as f:
+			dicti = pickle.load(f)
+			f.close()	
 
     # loop over frames from the video stream
 	while True:
-		print("inicio loop funcao")
 		# read the next frame from the video stream, resize it,
 		# convert the frame to grayscale, and blur it
 		status, frame = vs.read()
 		frame = maintain_aspect_ratio_resize(frame)
-		print("leu e redimensionou frame")
 		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-		print("gray")
 		faces = faceCascade.detectMultiScale(gray, scaleFactor = 1.5, minNeighbors = 5)
-		print("faces")
-		print(faces)
 
 		for (x, y, w, h) in faces:
-			print("for")
 			if args.trained == "y":
 				roiGray = gray[y:y+h, x:x+w]
 				id_, conf = recognizer.predict(roiGray)
@@ -134,15 +129,11 @@ def detect_face(frameCount):
 				for name, value in dicti.items():
 					if value == id_:
 						name1 = name
-						print(name, conf)
 				if conf < 105:
-					print("classifing")
 					cv2.putText(frame, name1 + str(140-conf), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0 ,255), 2,cv2.LINE_AA)
 					movePanTilt(x, y, w, h)
-					print("mexeu")
 			else:
 				movePanTilt(x, y, w, h)
-				print("mexeu")
 
 	with lock:
 		outputFrame = frame.copy()
@@ -187,21 +178,15 @@ if __name__ == '__main__':
 		help="# of frames used to construct the background model")
 	args = vars(ap.parse_args())
 
-	if args["trained"] == 'y':
-		recognizer = cv2.face.LBPHFaceRecognizer_create()
-		recognizer.read("trainer.yml")
-		with open('labels', 'rb') as f:
-			dicti = pickle.load(f)
-			f.close()
+
 
 	# start a thread that will perform motion detection
 	t = threading.Thread(target=detect_face, args=(
-		args["frame_count"],))
+		args["frame_count"],args["trained"]))
 	t.daemon = True
 	t.start()
 	# start the flask app
 	app.run(host=args["ip"], port=args["port"], debug=True,
 		threaded=True, use_reloader=False)
 	
-# release the video stream pointer
 
