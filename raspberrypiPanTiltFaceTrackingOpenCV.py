@@ -44,8 +44,8 @@ if args.trained == 'y':
 		dicti = pickle.load(f)
 		f.close()
 
-panServo = 2
-tiltServo = 3
+panServo = 3
+tiltServo = 2
 
 panPos = 1250
 tiltPos = 1600
