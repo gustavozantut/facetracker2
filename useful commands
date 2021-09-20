@@ -1,9 +1,0 @@
-#run python on remote gpio - https://gpiozero.readthedocs.io/en/stable/remote_gpio.html
-1. activate raspberry remote gpio, better specifying ip
-    sudo pigpiod -n localhost -n 192.168.0.22
-2. start raspi rstp host
-    sudo v4l2rtspserver -W 640 -H 480 -F 15 -P 8553 /dev/video0
-3. start script with pigpio specifying address 
-    PIGPIO_ADDR=192.168.0.23 python3 raspberrypiPanTiltFaceTrackingOpenCV.py
-    
-
